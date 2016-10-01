@@ -1,0 +1,15 @@
+html {
+	width: 100%;
+}
+
+body {
+	padding-top: 100px;
+	width: 70%;
+	display: block;
+	margin: 0 auto;
+	color: red;
+}
+
+h1 {
+	color: red;
+}
