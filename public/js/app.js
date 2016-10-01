@@ -7,10 +7,11 @@ var widget = {
 	comments: {}
 };
 
-function Comment(username, text){
+function Comment(username, text, when){
 	if(this instanceof Comment){
 		this.username = username;
-		this.test = text;
+		this.text = text;
+		this.when = when || new Date();
 		return this;
 	}
 	else {
@@ -48,17 +49,68 @@ var submitHandler = function(event){
 var addCommentHandler = function(event){
 	var newComment = new Comment(this.widget.form.username.value, this.widget.form.comment.value);
 	this.storeComment.call(this, newComment);
-	this.widget
+	
+	var domComment = this.createCommentDOM(newComment);
+	this.widget.comments.root.appendChild(domComment);
 };
+
+
+var createCommentDOM = function(commentObject){
+	let commentNode = document.createElement('DIV');
+	commentNode.setAttribute('class', 'comment');
+
+	let contentNode = document.createElement('DIV');
+	contentNode.setAttribute('class', 'content');
+
+	let imgDivNode = document.createElement('A');
+	imgDivNode.setAttribute('class','avatar');
+	let imgNode = document.createElement('IMG');
+	imgNode.setAttribute('src','http://semantic-ui.com/images/avatar/small/jenny.jpg');
+	imgDivNode.appendChild(imgNode);
+
+	let authorNode = document.createElement('DIV');
+	authorNode.setAttribute('class', 'author');
+	authorNode.appendChild(document.createTextNode(commentObject.username));
+
+	let metaNode = document.createElement('DIV');
+	metaNode.setAttribute('class', 'metadata');
+	let dateNode = document.createElement('SPAN');
+	dateNode.appendChild(document.createTextNode(commentObject.when));	
+	metaNode.appendChild(dateNode);
+
+	let textNode = document.createElement('DIV');
+	textNode.setAttribute('class', 'text');
+	textNode.appendChild(document.createTextNode(commentObject.text));	
+
+
+	contentNode.appendChild(metaNode);
+	contentNode.appendChild(authorNode);
+	contentNode.appendChild(textNode);
+	commentNode.appendChild(imgDivNode);
+	commentNode.appendChild(contentNode);
+	return commentNode;
+}
+
 
 var storeComment = function(comment){
 	if(this.hasBrowserSupport){
 		let comments = JSON.parse(localStorage.getItem('comments')) || [];
 		comments.push(comment);
 		localStorage.setItem('comments', JSON.stringify(comments));
-		console.log(comments);
 	}
 };
+
+var fetchAllComments = function(){
+	if(this.hasBrowserSupport){
+		let self = this;
+		let comments = JSON.parse(localStorage.getItem('comments')) || [];
+		self.widget.comments.root.innerHTML = '';
+		comments.forEach(function(el){
+			let commentDom = createCommentDOM(el);
+			self.widget.comments.root.appendChild(commentDom);
+		});
+	}
+}
 
 widget.root = document.getElementById('comments-widget');	
 
@@ -68,7 +120,7 @@ widget.form.comment = findByAttributeValue('input','name', 'comment');
 
 widget.comments.root = document.getElementById('comments');
 attachHandlers.call(this);
-
+fetchAllComments.call(this);
 
 
 
